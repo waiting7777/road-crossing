@@ -5,6 +5,12 @@ const gameScene = new Phaser.Scene('Game');
 
 gameScene.init = function() {
     this.playerSpeed = 3;
+    
+    this.enemyMinSpeed = 1;
+    this.enemyMaxSpeed = 4;
+
+    this.enemyMinY = 80;
+    this.enemyMaxY = 280;
 }
 
 gameScene.preload = function() {
@@ -26,6 +32,14 @@ gameScene.create = function() {
     this.goal = this.add.sprite(this.sys.game.config.width - 80, this.sys.game.config.height / 2, 'goal');
     this.goal.setScale(0.6);
 
+    this.enemy = this.add.sprite(120, this.sys.game.config.height / 2, 'enemy');
+    this.enemy.flipX = true;
+    this.enemy.setScale(0.6);
+
+    const dir = Math.random() < 0.5 ? 1 : -1;
+    const speed = this.enemyMinSpeed + Math.random() * (this.enemyMaxSpeed - this.enemyMinSpeed);
+    this.enemy.speed = dir * speed;
+
 }
 
 gameScene.update = function() {
@@ -41,6 +55,15 @@ gameScene.update = function() {
         console.log('reached goal!');
 
         this.scene.restart();
+    }
+
+    this.enemy.y += this.enemy.speed;
+
+    let conditionUP = this.enemy.speed < 0 && this.enemy.y <= this.enemyMinY;
+    let conditionDOWN = this.enemy.speed > 0 && this.enemy.y >= this.enemyMaxY;
+
+    if(conditionUP || conditionDOWN) {
+        this.enemy.speed *= -1;
     }
 
 }

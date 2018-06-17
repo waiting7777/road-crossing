@@ -6,11 +6,13 @@ const gameScene = new Phaser.Scene('Game');
 gameScene.init = function() {
     this.playerSpeed = 3;
     
-    this.enemyMinSpeed = 1;
-    this.enemyMaxSpeed = 4;
+    this.enemyMinSpeed = 2;
+    this.enemyMaxSpeed = 4.5;
 
     this.enemyMinY = 80;
     this.enemyMaxY = 280;
+
+    this.isTerminating = false;
 }
 
 gameScene.preload = function() {
@@ -56,6 +58,8 @@ gameScene.create = function() {
 
 gameScene.update = function() {
 
+    if(this.isTerminating) return;
+
     if(this.input.activePointer.isDown) {
         this.player.x += this.playerSpeed;
     }
@@ -66,7 +70,7 @@ gameScene.update = function() {
     if(Phaser.Geom.Intersects.RectangleToRectangle(playerRect, treasureRect)) {
         console.log('reached goal!');
 
-        this.scene.restart();
+        return this.gameOver();
     }
 
     let enemies = this.enemies.getChildren();
@@ -87,9 +91,28 @@ gameScene.update = function() {
             console.log('Game over!');
 
             this.scene.restart();
-            return;
+            return this.gameOver();
         }
     }
+}
+
+gameScene.gameOver = function() {
+    // initiated game over sequence
+    this.isTerminating = true;
+
+    // shake camera
+    this.cameras.main.shake(500);
+
+    // listen for event completion
+    this.cameras.main.on('camerashakecomplete', function(camera, effect){
+        // fade out
+        this.cameras.main.fade(500);
+    }, this);
+
+    this.cameras.main.on('camerafadeoutcomplete', function(camera, effect){
+        // restart the Scene
+        this.scene.restart();
+    }, this);
 }
 
 // set the configuration of the game
